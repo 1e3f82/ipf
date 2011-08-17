@@ -16,12 +16,14 @@
 package org.openehealth.ipf.platform.camel.core.extend;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import javax.xml.transform.dom.DOMResult;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -241,12 +243,78 @@ public class TransmogrifierExtensionTest extends AbstractExtensionTest {
         assertTrue(result.contains("svrl:failed-assert"));
     }
     
+    @Test
+    public void testDedicatedXqueryTransmogrifier()
+            throws InterruptedException,
+            IOException {
+        mockOutput.expectedMessageCount(1);
+        producerTemplate.sendBody("direct:input24", xqueryInput());
+        assertXqueryOutput();
+    }
 
+    @Test
+    public void testXqueryTransmogrifier() throws InterruptedException,
+            IOException {
+        mockOutput.expectedMessageCount(1);
+        producerTemplate.sendBody("direct:input25", xqueryInput());
+        assertXqueryOutput();
+    }
+
+    @Test
+    public void testXqueryTransmogrifierReturningInputStream()
+            throws InterruptedException, IOException {
+        mockOutput.expectedMessageCount(1);
+        producerTemplate.sendBody("direct:input26", xqueryInput());
+        mockOutput.assertIsSatisfied();
+        InputStream result = mockOutput.getExchanges().get(0).getIn()
+                .getBody(InputStream.class);
+        assertNotNull(result);
+    }
+    
+    @Test
+    public void testXqueryTransmogrifierReturningDOMResult()
+            throws InterruptedException, IOException {
+        mockOutput.expectedMessageCount(1);
+        producerTemplate.sendBody("direct:input27", xqueryInput());
+        mockOutput.assertIsSatisfied();
+        DOMResult result = mockOutput.getExchanges().get(0).getIn()
+                .getBody(DOMResult.class);
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testXqueryTransmogrifierExternalRessource()
+            throws InterruptedException, IOException {
+        mockOutput.expectedMessageCount(1);
+        producerTemplate.sendBody("direct:input28", xqueryInput());
+        assertXqueryOutput();
+    }
+
+    @Test
+    public void testXqueryTransmogrifierExternalSourceParam()
+            throws InterruptedException, IOException {
+        mockOutput.expectedMessageCount(1);
+        producerTemplate.sendBody("direct:input29", xqueryInput());
+        assertXqueryOutput();
+    }
+
+    private String xqueryInput() throws IOException {
+        return IOUtils.toString(new ClassPathResource("xquery/labreport.xml")
+                .getInputStream());
+    }
+    
     private String xsltInput() throws IOException {
         return IOUtils.toString(new ClassPathResource("xslt/createPatient.xml")
                 .getInputStream());
     }
-    
+
+    private void assertXqueryOutput() throws IOException, InterruptedException {
+        mockOutput.assertIsSatisfied();
+        String result = mockOutput.getExchanges().get(0).getIn()
+                .getBody(String.class);
+        assertNotNull(result);
+    }
+
     private void assertXsltOutput(String processingCode, String processingMode) throws IOException, InterruptedException {
         mockOutput.assertIsSatisfied();
         String result = (String)mockOutput.getExchanges().get(0).getIn().getBody();
@@ -263,6 +331,7 @@ public class TransmogrifierExtensionTest extends AbstractExtensionTest {
     private String invalidSchematronInput() throws IOException {
         return IOUtils.toString(new ClassPathResource(
                 "schematron/schematron-test-fail.xml").getInputStream());
+
     }
 
 }

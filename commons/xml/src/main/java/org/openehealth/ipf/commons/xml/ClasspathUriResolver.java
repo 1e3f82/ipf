@@ -19,7 +19,6 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXSource;
 
@@ -36,9 +35,9 @@ class ClasspathUriResolver implements URIResolver {
 
     private final URIResolver standardResolver;
     
-    public ClasspathUriResolver(TransformerFactory factory) {
+    public ClasspathUriResolver(URIResolver resolver) {
         super();
-        standardResolver = factory.getURIResolver();
+        standardResolver = resolver;
     }
 
     /**
